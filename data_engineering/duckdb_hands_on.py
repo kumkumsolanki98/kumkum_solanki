@@ -63,3 +63,38 @@ after = con.execute(
 print("\nNon-idempotent example:")
 print("Before:", before)
 print("After duplicate append:", after)
+
+
+
+# 2. Fix the problem
+def refresh_us_report():
+    con.execute("""
+        DELETE FROM report
+        WHERE country = 'US'
+    """)
+
+    con.execute("""
+        INSERT INTO report
+        SELECT *
+        FROM sales
+        WHERE country = 'US'
+    """)
+
+# 3. Verify the fix
+refresh_us_report()
+count_once = con.execute(
+    "SELECT COUNT(*) FROM report"
+).fetchone()[0]
+
+refresh_us_report()
+count_twice = con.execute(
+    "SELECT COUNT(*) FROM report"
+).fetchone()[0]
+
+assert count_once == 500_000
+assert count_twice == count_once
+
+print("Idempotent example:")
+print("After first refresh:", count_once)
+print("After second refresh:", count_twice)
+print("SUCCESS!")
