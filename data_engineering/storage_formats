@@ -1,0 +1,43 @@
+import duckdb, os
+con = duckdb.connect()
+con.execute("""
+    CREATE TABLE sales AS
+    SELECT i AS id, ['US','UK','IN','DE'][1+(i%4)] AS country,
+           (random()*100)::DECIMAL(10,2) AS revenue
+    FROM range(2_000_000) t(i)
+""")
+con.execute("COPY sales TO 'sales.csv'     (FORMAT CSV, HEADER)")
+con.execute("COPY sales TO 'sales.parquet' (FORMAT PARQUET)")
+print("CSV    MB:", round(os.path.getsize('sales.csv')/1e6, 1))
+print("Parquet MB:", round(os.path.getsize('sales.parquet')/1e6, 1))   # much smaller
+
+
+
+
+# Read and display the first 10 rows from parquet file
+result = con.execute("""
+    SELECT *
+    FROM 'sales.parquet'
+    LIMIT 10
+""").fetchall()
+
+print(result)
+
+# Check which has to read more of the file
+
+print(con.execute("""
+    SELECT SUM(revenue) FROM 'sales.csv'
+""").fetchone())
+
+print(con.execute("""
+    SELECT SUM(revenue) FROM 'sales.parquet'
+""").fetchone())
+
+# Partitioning
+
+#con.execute("""
+ #   COPY (SELECT *, (id % 5) AS day FROM sales)
+ #   TO 'sales_parts' (FORMAT PARQUET, PARTITION_BY (day))
+ #""")
+
+print(con.execute("SELECT SUM(revenue) FROM 'sales_parts/*/*.parquet' WHERE day = 2").fetchone())

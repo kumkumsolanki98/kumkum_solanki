@@ -1,0 +1,26 @@
+# Python environments and cache
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# dbt generated files
+target/
+dbt_packages/
+logs/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Generated practice data
+sales.csv
+sales.parquet
+sales_parts/
+orders_processed.parquet
+orders_parquet/
+
+# Databricks and dbt credentials
+profiles.yml
+.databrickscfg

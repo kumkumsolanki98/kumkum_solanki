@@ -97,4 +97,21 @@ assert count_twice == count_once
 print("Idempotent example:")
 print("After first refresh:", count_once)
 print("After second refresh:", count_twice)
-print("SUCCESS!")
+
+
+
+con.execute("CREATE TABLE customers(id INT, name TEXT, country TEXT)")
+con.execute("INSERT INTO customers VALUES (1,'Mara','US'),(2,'Ito','JP'),(3,'Lena','US')")
+con.execute("CREATE TABLE orders(id INT, customer_id INT, amount DECIMAL(8,2))")
+con.execute("INSERT INTO orders VALUES (10,1,50),(15,1,80),(11,1,20),(12,2,99)")  # note: customer 3 has none
+
+print(con.execute("""
+    SELECT c.name, COUNT(o.id) AS n_orders, COALESCE(SUM(o.amount),0) AS spent
+    FROM customers c
+    INNER JOIN orders o ON o.customer_id = c.id
+    GROUP BY c.name ORDER BY spent DESC
+""").fetchall())
+
+print(con.execute("""
+    SELECT c.name, SUM(c.id) FROM customers c JOIN orders o ON o.customer_id=c.id GROUP BY c.name
+""").fetchall())

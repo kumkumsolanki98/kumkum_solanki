@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    catalog: workspace
+    schema: dbt_practice
+    tables:
+      - name: raw_orders
+      - name: raw_customers

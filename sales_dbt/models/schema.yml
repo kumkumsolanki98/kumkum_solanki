@@ -1,0 +1,39 @@
+
+version: 2
+
+models:
+  - name: stg_orders
+    description: "Cleaned order data"
+    data_tests:
+      - unique:
+          arguments:
+            column_name: order_id
+      - not_null:
+          arguments:
+            column_name: order_id
+    columns:
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['placed', 'shipped', 'cancelled']
+
+  - name: stg_customers
+    description: "Cleaned customer data"
+    data_tests:
+      - unique:
+          arguments:
+            column_name: customer_id
+      - not_null:
+          arguments:
+            column_name: customer_id
+
+  - name: fct_orders
+    description: "Orders enriched with customer information"
+    columns:
+      - name: customer_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
